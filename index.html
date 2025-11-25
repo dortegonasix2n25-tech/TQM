@@ -5,36 +5,121 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pare Noel Pixel Game</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: #001233; /* Fondo oscuro navideño */
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        .content {
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #ffcc00;
+        }
+
+        .description {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .qr-container {
+            margin: 20px 0;
+        }
+
+        .qr {
+            width: 150px;
+            height: 150px;
+            margin: 10px;
+            border-radius: 10px;
+        }
+
+        .button-container {
+            margin: 20px 0;
+        }
+
+        p {
+            font-size: 1.1em;
+            margin-top: 30px;
+        }
+
+        .decorative-image {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+
+        /* Añadimos algo de decoración navideña */
+        .snowflakes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: fall 10s linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
+        }
+    </style>
 </head>
 <body>
-    <!-- Contenedor principal -->
+    <!-- Decoración de nieve -->
+    <div class="snowflakes">
+        <div class="snowflake" style="left: 10%; animation-duration: 10s;"></div>
+        <div class="snowflake" style="left: 30%; animation-duration: 12s;"></div>
+        <div class="snowflake" style="left: 50%; animation-duration: 8s;"></div>
+        <div class="snowflake" style="left: 70%; animation-duration: 11s;"></div>
+        <div class="snowflake" style="left: 90%; animation-duration: 14s;"></div>
+    </div>
+
     <div class="content">
         <!-- Título del juego -->
         <h1>Pare Noel Pixel Game</h1>
-        <p class="description">¡Escanea el código QR o presiona el botón para jugar al juego navideño del Pare Noel!</p>
+        <p class="description">¡Escaneja el codi QR i visita el joc nadalenc del Pare Noel!</p>
 
-        <!-- Imagen navideña -->
-        <img src="navidad.png" alt="Imagen navideña" class="image">
+        <!-- Imagen navideña decorativa -->
+        <img src="navidad.png" alt="Imagen navideña decorativa" class="decorative-image">
 
         <!-- Código QR -->
         <div class="qr-container">
-            <p>Escanea este QR para empezar:</p>
+            <p>Escaneja aquest QR per començar:</p>
             <img src="https://api.qrserver.com/v1/create-qr-code/?data=https://dortegonasix2n25-tech.github.io/joc-pare-noel/game/&size=200x200" alt="QR Code" class="qr">
         </div>
 
-        <!-- Botón Jugar -->
-        <div class="button-container">
-            <button onclick="startGame()">Jugar</button>
-        </div>
-
-        <p>¡Diviértete jugando! 🎄🎅</p>
+        <!-- Mensaje final -->
+        <p>¡Diviértete jugant! 🎄🎅</p>
     </div>
 
     <script>
-        function startGame() {
-            // Redirige al subdirectorio "game/" donde está el juego
-            window.location.href = "game/"; // Aquí usamos "game/" para redirigir al juego
-        }
+        // Este script se puede eliminar porque ya no es necesario el botón de jugar
     </script>
 </body>
 </html>
