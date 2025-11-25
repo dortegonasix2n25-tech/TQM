@@ -2,21 +2,27 @@
 <html lang="ca">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pare Noel Pixel Game</title>
-    <!-- Link al archivo CSS -->
     <link rel="stylesheet" href="style.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 </head>
-
 <body>
-    <!-- Marcador i botó de pausa -->
-    <div id="score">Punts: 0</div>
-    <button id="pauseBtn">Pausa</button>
+    <!-- Contenedor principal -->
+    <div class="content">
+        <!-- Título del juego -->
+        <h1>Pare Noel Pixel Game</h1>
+        <p class="description">¡Escanea el código QR para jugar al juego navideño del Pare Noel!</p>
 
-    <!-- Canvas principal -->
-    <canvas id="game" width="900" height="500"></canvas>
+        <!-- Imagen navideña -->
+        <img src="navidad.png" alt="Imagen navideña" class="image">
 
-    <!-- Link al archivo JS -->
-    <script src="game.js"></script>
+        <!-- Código QR -->
+        <div class="qr-container">
+            <p>Escanea este QR para empezar:</p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?data=https://tuusuario.github.io/pare-noel-game/&size=200x200" alt="QR Code" class="qr">
+        </div>
+
+        <p>¡Diviértete jugando! 🎄🎅</p>
+    </div>
 </body>
 </html>
