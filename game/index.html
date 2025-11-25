@@ -1,36 +1,179 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pare Noel Pixel Game - Mòbil</title>
+<style>
+    /* Estils bàsics: fons fosc, text blanc, canvas centrat */
+    body {
+        margin: 0;
+        background: #000814;
+        overflow: hidden;
+        font-family: 'Press Start 2P', Arial, sans-serif;
+        color: white;
+        /* Per a un disseny mòbil que ompli la pantalla */
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    /* Marcador de punts */
+    #score {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 16px; /* Mida més petita per a mòbils */
+        z-index: 10;
+        text-shadow: 1px 1px 2px black;
+    }
+
+    /* Botó de pausa */
+    #pauseBtn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 10;
+        padding: 8px 16px;
+        background: #ffcc00;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 14px;
+        box-shadow: 0 4px 0 #b38f00;
+        transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    #pauseBtn:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 #b38f00;
+    }
+
+    /* REQUISIT 2: Canvas responsiu */
+    canvas {
+        display: block;
+        flex-grow: 1; /* Permet que el canvas ocupi l'espai vertical disponible */
+        width: 100%;
+        max-height: calc(100vh - 120px); /* Deixa espai per als controls */
+        background: #001233;
+        image-rendering: pixelated; /* Mantenir l'efecte "pixel art" */
+    }
+
+    /* Estils dels controls tàctils */
+    #controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 10px 0;
+        box-sizing: border-box;
+        background: #000814;
+    }
+
+    .d-pad, .action-btn {
+        display: flex;
+        gap: 10px;
+        margin: 0 20px;
+    }
+
+    .touch-btn {
+        width: 60px;
+        height: 60px;
+        border-radius: 10px;
+        background: #4d4d4d;
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        border: 4px solid #2e2e2e;
+        cursor: pointer;
+        user-select: none; /* Evita selecció de text en pantalles tàctils */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background 0.1s, transform 0.1s;
+        box-shadow: 0 4px 0 #1a1a1a;
+    }
+
+    .touch-btn:active {
+        background: #6e6e6e;
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 #1a1a1a;
+    }
+
+    #giftBtn {
+        background: #ff4d4d; /* Color diferent per al botó d'acció */
+        border-color: #cc0000;
+        box-shadow: 0 4px 0 #990000;
+        width: 80px;
+        height: 80px;
+        font-size: 30px;
+    }
+
+    #giftBtn:active {
+        background: #ff8080;
+        box-shadow: 0 2px 0 #990000;
+    }
+</style>
+</head>
+
+<body>
+<div id="score">Punts: 0</div>
+<button id="pauseBtn">Pausa</button>
+
+<canvas id="game" width="900" height="500"></canvas>
+
+<div id="controls">
+    <div class="d-pad">
+        <button id="upBtn" class="touch-btn">▲</button>
+        <button id="leftBtn" class="touch-btn">◀</button>
+        <button id="rightBtn" class="touch-btn">▶</button>
+        <button id="downBtn" class="touch-btn">▼</button>
+    </div>
+    <div class="action-btn">
+        <button id="giftBtn" class="touch-btn">🎁</button>
+    </div>
+</div>
+
+<script>
 /* ============================================================================================
-   CONFIGURACIÓ I REFERÈNCIES
+   CONFIGURACIÓ GENERAL DEL JOC
    ============================================================================================ */
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const pauseBtn = document.getElementById("pauseBtn");
 
-/* Controls Tàctils (Referència als botons) */
+/* Controls Tàctils (Afegir referències) */
 const upBtn = document.getElementById("upBtn");
 const downBtn = document.getElementById("downBtn");
 const leftBtn = document.getElementById("leftBtn");
 const rightBtn = document.getElementById("rightBtn");
 const giftBtn = document.getElementById("giftBtn");
 
-/* Variables de Joc */
-let estat = "start";
+/* Possibles estats del joc */
+let estat = "start"; // "start", "playing", "paused", "gameover"
+
+/* Variables principals del joc */
 let punts, vides, santa, regals, cases, ocells, efectes;
 
-/* Variables de moviment del Pare Noel */
+/* Variables de moviment del Pare Noel (substitueixen "teclas") */
 let isMoving = {
-    up: false, down: false, left: false, right: false
+    up: false,
+    down: false,
+    left: false,
+    right: false
 };
-let isShooting = false;
+let isShooting = false; // Per evitar disparar contínuament
 
-/* Constants */
+/* Constants per a xemeneies, etc. (mantingudes) */
 const xemeneiaWBase = 25;
 const xemeneiaHBase = 25;
 const numCases = 5;
 let velocitatCasesBase = 3;
 let velocitatCases;
 
-/* Comptadors i Decoració */
+/* Altres comptadors i elements de decoració (mantinguts) */
 let encerts;
 let combo = 0;
 let millorCombo = 0;
@@ -39,63 +182,434 @@ let flocsNeu = [];
 let skyline = [];
 
 /* ============================================================================================
-   FUNCIONS AUXILIARS DE LÒGICA
+   FUNCIÓ PER REINICIAR TOT EL JOC (MANTINGUDA)
+   ============================================================================================ */
+function resetGame() {
+    punts = 0;
+    vides = 5;
+    santa = {
+        x: 200,
+        y: 110,
+        w: 60,
+        h: 32,
+        speed: 5,
+        angle: 0
+    };
+    regals = [];
+    cases = [];
+    ocells = [];
+    efectes = [];
+    velocitatCases = velocitatCasesBase;
+    encerts = 0;
+    combo = 0;
+    millorCombo = 0;
+
+    generaCasesInicials();
+    generaEstrelles();
+    generaNeu();
+    generaSkyline();
+
+    document.getElementById("score").innerText = "Punts: " + punts;
+
+    // Reinicia l'estat dels controls
+    isMoving = { up: false, down: false, left: false, right: false };
+    isShooting = false;
+}
+resetGame();
+
+/* ============================================================================================
+   FUNCIONS DE REDIMENSIONAMENT (REQUISIT ADAPTABILITAT)
    ============================================================================================ */
 
-function rgba(r, g, b, a) {
-    return `rgba(${r},${g},${b},${a})`;
-}
+function resizeCanvas() {
+    // Esforça el canvas a adaptar-se al seu contenidor (l'etiqueta <canvas> té width: 100%)
+    // L'alçada es calcula per mantenir la proporció i deixar espai als controls.
+    const containerHeight = document.body.clientHeight - document.getElementById('controls').offsetHeight - 20; // 20px de marge
 
-function intersectaRect(r, x, y, w, h) {
-    return (
-        r.x < x + w && r.x + r.w > x && r.y < y + h && r.y + r.h > y
-    );
-}
+    // La proporció original és 900 / 500 = 1.8
+    const aspectRatio = 900 / 500;
+    
+    let newWidth = window.innerWidth;
+    let newHeight = newWidth / aspectRatio;
 
-function perdVida(amount = 1) {
-    vides -= amount;
-    combo = 0;
-    if (vides <= 0) {
-        vides = 0;
-        estat = "gameover";
-        actualitzaTextBoto();
+    if (newHeight > containerHeight) {
+        newHeight = containerHeight;
+        newWidth = newHeight * aspectRatio;
+    }
+    
+    // Assegura que el canvas no excedeixi el contenidor horitzontalment en mode portrait.
+    if (newWidth > window.innerWidth) {
+        newWidth = window.innerWidth;
+        newHeight = newWidth / aspectRatio;
+    }
+
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+    
+    // Per a un renderitzat nítid de píxels, cal escalar el context
+    const scaleX = canvas.width / 900;
+    const scaleY = canvas.height / 500;
+    ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
+
+    // Regenerar elements basats en la mida del canvas original
+    if (estat === "start" || estat === "gameover") {
+        dibuixaNit(); // Refresca fons si estem en pantalla d'inici
     }
 }
 
-function actualitzaTextBoto() {
-    if (estat === "playing") pauseBtn.textContent = "Pausa";
-    else if (estat === "paused") pauseBtn.textContent = "Reprendre";
-    else pauseBtn.textContent = "Pausa";
+// Escolta els canvis de mida i orientació
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas(); // Crida inicial per establir la mida
+
+/* ============================================================================================
+   CONTROLS DEL JUGADOR: TÀCTILS
+   ============================================================================================ */
+
+/* Funció central per gestionar l'estat de pressió dels botons tàctils */
+function handleTouch(e, isPressed, direction) {
+    e.preventDefault(); // Evita el zoom o scroll de la pantalla
+    if (estat !== "playing" && direction !== "gift") return;
+
+    if (direction === "gift") {
+        if (isPressed && !isShooting) {
+            // Llençar un regal una vegada per polsació
+            regals.push({
+                x: santa.x + santa.w / 2 - 5,
+                y: santa.y + santa.h,
+                w: 10,
+                h: 10
+            });
+            isShooting = true;
+        } else if (!isPressed) {
+            isShooting = false;
+        }
+    } else {
+        isMoving[direction] = isPressed;
+    }
 }
 
+/* Assignació d'esdeveniments tàctils a tots els botons */
+function setupTouchControls() {
+    const buttons = [
+        { element: upBtn, direction: 'up' },
+        { element: downBtn, direction: 'down' },
+        { element: leftBtn, direction: 'left' },
+        { element: rightBtn, direction: 'right' },
+        { element: giftBtn, direction: 'gift' }
+    ];
+
+    buttons.forEach(btn => {
+        // Tothom: touchstart (inici de pressió)
+        btn.element.addEventListener("touchstart", (e) => handleTouch(e, true, btn.direction), { passive: false });
+        // Tothom: touchend (final de pressió)
+        btn.element.addEventListener("touchend", (e) => handleTouch(e, false, btn.direction), { passive: false });
+        // Tothom: touchcancel (per si el dit surt de la pantalla o es cancel·la)
+        btn.element.addEventListener("touchcancel", (e) => handleTouch(e, false, btn.direction), { passive: false });
+
+        // També afegim clics per a compatibilitat amb ratolí al PC si es volgués provar
+        btn.element.addEventListener("mousedown", (e) => handleTouch(e, true, btn.direction), { passive: false });
+        btn.element.addEventListener("mouseup", (e) => handleTouch(e, false, btn.direction), { passive: false });
+        btn.element.addEventListener("mouseleave", (e) => handleTouch(e, false, btn.direction), { passive: false });
+    });
+}
+setupTouchControls();
+
+/* Gestió de pausa i Enter (només per a GAME OVER en mòbil) */
+pauseBtn.addEventListener("click", () => {
+    if (estat === "playing" || estat === "paused") togglePause();
+});
+
+// Gestió de ENTER per reiniciar (per si hi ha teclat extern o prova en PC)
+document.addEventListener("keydown", e => {
+    if (e.code === "Enter") {
+        if (estat === "start" || estat === "gameover") {
+            resetGame();
+            estat = "playing";
+            actualitzaTextBoto();
+        }
+    }
+    // Permet la pausa amb P o ESC, encara que la prioritat sigui el botó tàctil
+    if ((e.code === "KeyP" || e.code === "Escape") && (estat === "playing" || estat === "paused")) {
+        togglePause();
+    }
+});
+
+/* Toggle Pausa (MANTINGUDA) */
 function togglePause() {
     if (estat === "playing") estat = "paused";
     else if (estat === "paused") estat = "playing";
     actualitzaTextBoto();
 }
 
+/* Actualitza el text del botó de pausa (MANTINGUDA) */
+function actualitzaTextBoto() {
+    if (estat === "playing") pauseBtn.textContent = "Pausa";
+    else if (estat === "paused") pauseBtn.textContent = "Reprendre";
+    else pauseBtn.textContent = "Pausa";
+}
+
 /* ============================================================================================
-   FUNCIONS DE CREACIÓ I DIBUIX DE MÓN
+   UPDATE DEL JOC (Adaptació del moviment)
+   ============================================================================================ */
+
+function update() {
+    if (estat !== "playing") return;
+
+    /* Actualitzar moviment de neu (MANTINGUT) */
+    updateNeu();
+
+    /* Moviment del Pare Noel: Ús de l'estat tàctil */
+    if (isMoving.left)  santa.x -= santa.speed;
+    if (isMoving.right) santa.x += santa.speed;
+    if (isMoving.up)    santa.y -= santa.speed;
+    if (isMoving.down)  santa.y += santa.speed;
+
+    /* Límits de moviment (MANTINGUT) */
+    santa.x = Math.max(0, Math.min(900 - santa.w, santa.x)); // Ús de 900 i 500 (mida original)
+    santa.y = Math.max(10, Math.min(500 - santa.h - 10, santa.y)); // El context 900x500 es manté
+
+    /* Petita animació vertical (bobbing) (MANTINGUDA) */
+    santa.angle += 0.03;
+    santa.y += Math.sin(santa.angle) * 0.3;
+
+    /* Resta de la lògica (moviment de regals, cases, col·lisions, etc.) MANTINGUDA */
+    // ... (la resta de la funció update, incloent regals, cases, ocells, vides) ...
+    
+    // Moviment dels regals
+    for (let r of regals) r.y += 5;
+
+    // Moviment de cases
+    for (let c of cases) {
+        c.x -= velocitatCases;
+        c.chimX -= velocitatCases;
+        for (let f of c.finestres) f.x -= velocitatCases;
+    }
+
+    // Eliminar cases que surten i generar-ne de noves
+    cases = cases.filter(c => c.x + c.w > -50);
+    let visible = cases.length;
+    let maxX = visible ? Math.max(...cases.map(c => c.x + c.w)) : 50;
+    while (visible < numCases) {
+        maxX += 170 + Math.random() * 80;
+        cases.push(creaCasa(maxX));
+        visible++;
+    }
+
+    // Col·lisió santa-cases (si toca casa → game over)
+    for (let c of cases) {
+        const casaRect = { x: c.x, y: c.y, w: c.w, h: c.h };
+        const teuladaRect = { x: c.x, y: c.y - 20, w: c.w, h: 20 };
+        const santaRect = { x: santa.x, y: santa.y, w: santa.w, h: santa.h };
+
+        if (intersectaRect(santaRect, casaRect.x, casaRect.y, casaRect.w, casaRect.h) ||
+            intersectaRect(santaRect, teuladaRect.x, teuladaRect.y, teuladaRect.w, teuladaRect.h)) {
+            perdVida(vides);
+            break;
+        }
+    }
+
+    /* PROCESSAR REGALS */
+    regals = regals.filter(r => {
+        let encert = false;
+        let puntsGuanyats = 0;
+
+        for (let c of cases) {
+            if (c.completada) continue;
+
+            /* XEMENEIA → 2 punts */
+            if (intersectaRect(r, c.chimX, c.chimY, c.chimW, c.chimH)) {
+                encert = true;
+                puntsGuanyats = 2;
+                c.completada = true;
+                efectes.push({ x: r.x + r.w / 2, y: r.y + r.h / 2, life: 20 });
+                break;
+            }
+
+            /* TEULADA → 1 punt (ha d’estar per sobre del mur) */
+            const roofX = c.x;
+            const roofY = c.y - 20;
+            const roofW = c.w;
+            const roofH = 20;
+
+            if (
+                intersectaRect(r, roofX, roofY, roofW, roofH) &&
+                r.y + r.h <= c.y
+            ) {
+                encert = true;
+                puntsGuanyats = 1;
+                c.completada = true;
+                efectes.push({ x: r.x + r.w / 2, y: r.y + r.h / 2, life: 20 });
+                break;
+            }
+        }
+
+        if (encert) {
+            punts += puntsGuanyats;
+            encerts++;
+            combo++;
+            if (combo > millorCombo) millorCombo = combo;
+            document.getElementById("score").innerText = "Punts: " + punts;
+
+            /* Augmenta velocitat cada 5 encerts */
+            if (encerts % 5 === 0) velocitatCases += 0.5;
+
+            return false;
+        }
+
+        /* Regal cau → mig cor i combo 0 */
+        if (r.y >= 500) { // 500 és l'alçada base del joc
+            perdVida(0.5);
+            return false;
+        }
+
+        return true;
+    });
+
+    /* GENERAR OCELLS (enemics) */
+    if (Math.random() < 0.01 && ocells.length < 4) {
+        ocells.push({
+            x: 900 + 40, // 900 és l'amplada base
+            y: 40 + Math.random() * 250,
+            w: 40,
+            h: 22
+        });
+    }
+
+    /* Moviment d’ocells i col·lisió */
+    ocells = ocells.filter(o => {
+        o.x -= velocitatCases;
+        const santaRect = { x: santa.x, y: santa.y, w: santa.w, h: santa.h };
+        if (intersectaRect(santaRect, o.x, o.y, o.w, o.h)) {
+            perdVida(1);
+            return false;
+        }
+        return o.x + o.w > -50;
+    });
+
+    /* Actualitzar efectes visuals */
+    efectes.forEach(e => e.life--);
+    efectes = efectes.filter(e => e.life > 0);
+
+}
+
+/* ============================================================================================
+   DIBUIX GENERAL (MANTINGUT, usa la mida original 900x500 internament)
+   ============================================================================================ */
+
+function draw() {
+    /* Reinicialitza la matriu de transformació per al dibuix */
+    ctx.save();
+    const scaleX = canvas.width / 900;
+    const scaleY = canvas.height / 500;
+    ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
+
+    /* Fons i món (els dibuixos es fan a 900x500) */
+    dibuixaNit();
+    dibuixaSkyline();
+    dibuixaNeu();
+    dibuixaCases();
+    dibuixaOcells();
+    dibuixaSantaIRen();
+    dibuixaRegals();
+    dibuixaEfectes();
+    dibuixaVides();
+
+    /* Menús segons estat */
+    if (estat === "start") {
+        dibuixaPanell(
+            ["Joc del Pare Noel"],
+            [
+                "Utilitza els botons tàctils per moure i llençar regals.",
+                "Evita ocells i cases · Teulada = 1 punt · Xemeneia = 2 punts",
+                "Toca un botó de moviment per començar"
+            ]
+        );
+    }
+
+    else if (estat === "paused") {
+        dibuixaPanell(
+            ["PAUSA"],
+            ["Prem el botó Reprendre per continuar"]
+        );
+    }
+
+    else if (estat === "gameover") {
+        dibuixaPanell(
+            [
+                "GAME OVER",
+                "Punts: " + punts,
+                "Millor racha: " + millorCombo
+            ],
+            ["Refresca la pàgina per tornar a jugar"]
+        );
+    }
+    
+    /* Restaura la matriu de transformació */
+    ctx.restore();
+}
+
+/* ============================================================================================
+   LOOP PRINCIPAL DEL JOC (MANTINGUT)
+   ============================================================================================ */
+function loop() {
+    // Si l'estat és 'start', qualsevol moviment tàctil llança el joc
+    if (estat === "start" && (isMoving.up || isMoving.down || isMoving.left || isMoving.right)) {
+        resetGame();
+        estat = "playing";
+        actualitzaTextBoto();
+    }
+    
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+// ** Mantenir la resta de funcions (dibuixaNit, dibuixaSkyline, updateNeu, dibuixaNeu, creaCasa, generaCasesInicials, dibuixaVides, intersectaRect, perdVida, dibuixaCases, dibuixaOcells, dibuixaSantaIRen, dibuixaRegals, dibuixaEfectes, dibuixaPanell) intactes ja que la seva lògica interna de dibuix utilitza les coordenades base 900x500 i no interfereixen amb el nou sistema de controls. **
+
+// ... (Copiar aquí totes les funcions auxiliars del codi original que s'han mantingut intactes: dibuixaNit, dibuixaSkyline, updateNeu, dibuixaNeu, creaCasa, generaCasesInicials, perdVida, intersectaRect, dibuixaVides, dibuixaCases, dibuixaOcells, dibuixaSantaIRen, dibuixaRegals, dibuixaEfectes, dibuixaPanell) ...
+// Per brevetat, assumeixo que l'usuari manté les funcions auxiliars ja que són part de la "lògica del joc" que s'ha de respectar.
+
+/* ============================================================================================
+   FUNCIÓ rgba (necessària per dibuixaEfectes)
+   ============================================================================================ */
+function rgba(r, g, b, a) {
+    return `rgba(${r},${g},${b},${a})`;
+}
+
+// COPIAR LES FUNCIONS AUXILIARS DEL JOC ORIGINAL (si no estan, el codi no compilarà):
+// La lògica de dibuix i creació d'elements s'ha mantingut inalterada, només es canvia el mecanisme d'input.
+
+// ************** REINSERCIÓ DE FUNCIONS DE L'USUARI (DIBUIX I LÒGICA AUXILIAR) **************
+
+/* ============================================================================================
+   GENERACIÓ DE DECORACIÓ: ESTRELLES, NEU I SKYLINE
    ============================================================================================ */
 
 function generaEstrelles() {
     estrelles = [];
     for (let i = 0; i < 120; i++) {
         estrelles.push({
-            x: Math.random() * 900, y: Math.random() * 500, r: Math.random() * 1.5 + 0.5
+            x: Math.random() * 900,
+            y: Math.random() * 500,
+            r: Math.random() * 1.5 + 0.5
         });
     }
 }
 
+/* Crear flocs de neu en posicions aleatòries */
 function generaNeu() {
     flocsNeu = [];
     for (let i = 0; i < 150; i++) {
         flocsNeu.push({
-            x: Math.random() * 900, y: Math.random() * 500, r: Math.random() * 2 + 1, speed: 0.5 + Math.random() * 1.5
+            x: Math.random() * 900,
+            y: Math.random() * 500,
+            r: Math.random() * 2 + 1,
+            speed: 0.5 + Math.random() * 1.5
         });
     }
 }
 
+/* Crea edificis per al fons ("skyline") */
 function generaSkyline() {
     skyline = [];
     let x = 0;
@@ -107,24 +621,34 @@ function generaSkyline() {
     }
 }
 
+/* ============================================================================================
+   FUNCIÓ PER DIBUIXAR EL CEL, ESTRELLES, LLUNA I EDIFICIS DE FONS
+   ============================================================================================ */
+
 function dibuixaNit() {
+    /* Gradient del cel */
     const grad = ctx.createLinearGradient(0, 0, 0, 500);
     grad.addColorStop(0, "#000814");
     grad.addColorStop(1, "#001d3d");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 900, 500);
+
+    /* Estrelles */
     ctx.fillStyle = "white";
     for (let s of estrelles) {
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
         ctx.fill();
     }
+
+    /* LLUNA PLENA */
     ctx.beginPath();
     ctx.arc(900 - 120, 100, 40, 0, Math.PI * 2);
     ctx.fillStyle = "#f5f3c1";
     ctx.fill();
 }
 
+/* Edificis del fons */
 function dibuixaSkyline() {
     ctx.fillStyle = "#000918";
     for (let b of skyline) {
@@ -132,6 +656,7 @@ function dibuixaSkyline() {
     }
 }
 
+/* Actualitzar moviment de neu */
 function updateNeu() {
     for (let f of flocsNeu) {
         f.y += f.speed;
@@ -142,6 +667,7 @@ function updateNeu() {
     }
 }
 
+/* Dibuxiar neu */
 function dibuixaNeu() {
     ctx.fillStyle = "#ffffff";
     for (let f of flocsNeu) {
@@ -151,17 +677,29 @@ function dibuixaNeu() {
     }
 }
 
+/* ============================================================================================
+   GENERACIÓ DE CASES I ELEMENTS DE JOC
+   ============================================================================================ */
+
 function creaCasa(posX) {
+    /* Amplada i alçada aleatòries */
     const w = 80 + Math.random() * 60;
     const h = 60 + Math.random() * 60;
+
+    /* Posició vertical */
     const baseY = 500 - h;
+
+    /* Colors de paret */
     const colorsCasa = ["#8b4513", "#a0522d", "#6b3e26", "#9c6644"];
     const color = colorsCasa[Math.floor(Math.random() * colorsCasa.length)];
+
+    /* Dimensions de xemeneia */
     const chimW = xemeneiaWBase + Math.random() * 10;
     const chimH = xemeneiaHBase + Math.random() * 10;
     const chimX = posX + 20 + Math.random() * (w - 40 - chimW);
     const chimY = baseY - chimH;
 
+    /* Finestres aleatòries */
     let finestres = [];
     for (let f = 0; f < 2; f++) {
         const numW = 2 + Math.floor(Math.random() * 2);
@@ -177,11 +715,24 @@ function creaCasa(posX) {
             finestres.push({ x: fx, y: fy, w: fw, h: fh, lit });
         }
     }
+
+    /* Retorna un objecte casa */
     return {
-        x: posX, y: baseY, w, h, chimX, chimY, chimW, chimH, color, finestres, completada: false
+        x: posX,
+        y: baseY,
+        w,
+        h,
+        chimX,
+        chimY,
+        chimW,
+        chimH,
+        color,
+        finestres,
+        completada: false   // Per marcar si ja ha donat punts
     };
 }
 
+/* Generar les primeres cases */
 function generaCasesInicials() {
     cases = [];
     let posX = 50;
@@ -191,16 +742,54 @@ function generaCasesInicials() {
     }
 }
 
+/* ============================================================================================
+   VIDA I COL·LISIONS
+   ============================================================================================ */
+
+/* Redueix vida i reinicia combo */
+function perdVida(amount = 1) {
+    vides -= amount;
+    combo = 0;  // Perds racha
+    if (vides <= 0) {
+        vides = 0;
+        estat = "gameover";
+        actualitzaTextBoto();
+    }
+}
+
+/* Detecció bàsica de col·lisió de rectangles */
+function intersectaRect(r, x, y, w, h) {
+    return (
+        r.x < x + w &&
+        r.x + r.w > x &&
+        r.y < y + h &&
+        r.y + r.h > y
+    );
+}
+
+/* ============================================================================================
+   DIBUIX DE HUD I ELEMENTS DEL JOC
+   ============================================================================================ */
+
 function dibuixaVides() {
     ctx.font = "24px Arial";
     for (let i = 0; i < 5; i++) {
         const posX = 900 - 30 - i * 30;
         const posY = 35;
-        if (vides >= i + 1) ctx.fillStyle = "red";
-        else if (vides >= i + 0.5) ctx.fillStyle = "pink";
-        else ctx.fillStyle = "rgba(255,255,255,0.2)";
-        ctx.fillText((vides >= i + 1) ? "❤" : "♡", posX, posY);
+
+        if (vides >= i + 1) {
+            ctx.fillStyle = "red";       // Cor ple
+            ctx.fillText("❤", posX, posY);
+        } else if (vides >= i + 0.5) {
+            ctx.fillStyle = "pink";      // Mig cor
+            ctx.fillText("♡", posX, posY);
+        } else {
+            ctx.fillStyle = "rgba(255,255,255,0.2)";
+            ctx.fillText("♡", posX, posY); // Buit
+        }
     }
+
+    /* Racha al centre superior */
     ctx.font = "18px Arial";
     ctx.textAlign = "center";
     ctx.fillStyle = combo >= 3 ? "#ffeb3b" : "white";
@@ -208,10 +797,18 @@ function dibuixaVides() {
     ctx.textAlign = "left";
 }
 
+/* ============================================================================================
+   DIBUIX DE CASES
+   ============================================================================================ */
+
 function dibuixaCases() {
     for (let c of cases) {
+
+        /* Cos de la casa */
         ctx.fillStyle = c.color;
         ctx.fillRect(c.x, c.y, c.w, c.h);
+
+        /* Teulada triangular */
         ctx.fillStyle = "#4a2f19";
         ctx.beginPath();
         ctx.moveTo(c.x, c.y);
@@ -219,16 +816,24 @@ function dibuixaCases() {
         ctx.lineTo(c.x + c.w, c.y);
         ctx.closePath();
         ctx.fill();
+
+        /* Xemeneia */
         ctx.fillStyle = "#333";
         ctx.fillRect(c.chimX, c.chimY, c.chimW, c.chimH);
+
+        /* Porta */
         ctx.fillStyle = "#5c3a21";
         const pw = 24, ph = 36;
         ctx.fillRect(c.x + c.w / 2 - pw / 2, c.y + c.h - ph, pw, ph);
+
+        /* Finestres */
         for (let f of c.finestres) {
             ctx.fillStyle = f.lit ? "#ffd966" : "#1f2933";
             ctx.fillRect(f.x, f.y, f.w, f.h);
             ctx.strokeStyle = "#000";
             ctx.strokeRect(f.x, f.y, f.w, f.h);
+
+            /* Creu de la finestra */
             ctx.beginPath();
             ctx.moveTo(f.x + f.w/2, f.y);
             ctx.lineTo(f.x + f.w/2, f.y + f.h);
@@ -236,6 +841,8 @@ function dibuixaCases() {
             ctx.lineTo(f.x + f.w, f.y + f.h/2);
             ctx.stroke();
         }
+
+        /* Garlanda de llums */
         const cols = ["#ff4d4d", "#4dff4d", "#4dc3ff", "#ffff4d"];
         for (let x = c.x + 5; x < c.x + c.w - 5; x += 10) {
             ctx.fillStyle = cols[Math.floor(Math.random() * cols.length)];
@@ -246,14 +853,25 @@ function dibuixaCases() {
     }
 }
 
+/* ============================================================================================
+   DIBUIX D’OCELLS
+   ============================================================================================ */
 function dibuixaOcells() {
     for (let o of ocells) {
+
+        /* Cos */
         ctx.fillStyle = "#c0c0c0";
         ctx.fillRect(o.x, o.y + 6, 28, 10);
+
+        /* Cap */
         ctx.fillStyle = "#e0e0e0";
         ctx.fillRect(o.x + 25, o.y + 4, 10, 10);
+
+        /* Bec */
         ctx.fillStyle = "#ffcc33";
         ctx.fillRect(o.x + 35, o.y + 7, 6, 4);
+
+        /* Ala */
         ctx.fillStyle = "#a0a0a0";
         ctx.beginPath();
         ctx.moveTo(o.x + 10, o.y + 6);
@@ -264,9 +882,16 @@ function dibuixaOcells() {
     }
 }
 
+/* ============================================================================================
+   DIBUIX DEL PARE NOEL I EL REN
+   ============================================================================================ */
+
 function dibuixaSantaIRen() {
+
+    /* TRINEU */
     ctx.fillStyle = "#b30000";
     ctx.fillRect(santa.x - 8, santa.y + 10, 48, 22);
+
     ctx.fillStyle = "#ffcc00";
     ctx.beginPath();
     ctx.moveTo(santa.x - 10, santa.y + 32);
@@ -275,33 +900,58 @@ function dibuixaSantaIRen() {
     ctx.lineTo(santa.x - 14, santa.y + 36);
     ctx.closePath();
     ctx.fill();
+
+    /* PARE NOEL */
     ctx.fillStyle = "red";
     ctx.fillRect(santa.x + 10, santa.y - 5, 18, 26);
+
+    /* Cap */
     ctx.fillStyle = "#ffe0bd";
     ctx.fillRect(santa.x + 12, santa.y - 17, 14, 14);
+
+    /* Barba */
     ctx.fillStyle = "white";
     ctx.fillRect(santa.x + 10, santa.y - 5, 18, 8);
+
+    /* Barret */
     ctx.fillStyle = "red";
     ctx.fillRect(santa.x + 12, santa.y - 23, 16, 8);
+
+    /* Franja del barret */
     ctx.fillStyle = "white";
     ctx.fillRect(santa.x + 12, santa.y - 25, 16, 3);
+
+    /* Borla del barret */
     ctx.beginPath();
     ctx.arc(santa.x + 28, santa.y - 24, 3, 0, Math.PI * 2);
     ctx.fill();
+
+    /* Sac de regals */
     ctx.fillStyle = "#3b2a1a";
     ctx.fillRect(santa.x + 28, santa.y, 12, 18);
+
+    /* REN */
     const renX = santa.x + santa.w + 30;
     const renY = santa.y + 4;
+
     ctx.fillStyle = "#c87f4f";
-    ctx.fillRect(renX, renY + 6, 40, 14);
-    ctx.fillRect(renX + 30, renY - 2, 12, 12);
+    ctx.fillRect(renX, renY + 6, 40, 14);  // cos
+    ctx.fillRect(renX + 30, renY - 2, 12, 12); // cap
+
+    /* Potes */
     ctx.fillRect(renX + 6, renY + 20, 4, 10);
     ctx.fillRect(renX + 24, renY + 20, 4, 10);
+
+    /* Nas */
     ctx.fillStyle = "#ff6666";
     ctx.fillRect(renX + 40, renY + 4, 4, 4);
+
+    /* Banyes */
     ctx.fillStyle = "#e0c9a6";
     ctx.fillRect(renX + 34, renY - 12, 3, 10);
     ctx.fillRect(renX + 30, renY - 12, 3, 8);
+
+    /* Corretja */
     ctx.strokeStyle = "#cc3300";
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -310,12 +960,18 @@ function dibuixaSantaIRen() {
     ctx.stroke();
 }
 
+/* ============================================================================================
+   REGALS I EFECTES
+   ============================================================================================ */
+
 function dibuixaRegals() {
     ctx.fillStyle = "#ffd54f";
     for (let r of regals) {
         ctx.fillRect(r.x, r.y, r.w, r.h);
+
         ctx.strokeStyle = "#d50000";
         ctx.strokeRect(r.x, r.y, r.w, r.h);
+
         ctx.beginPath();
         ctx.moveTo(r.x + r.w/2, r.y);
         ctx.lineTo(r.x + r.w/2, r.y + r.h);
@@ -329,6 +985,7 @@ function dibuixaEfectes() {
     for (let e of efectes) {
         const alpha = e.life / 20;
         const radius = 8 + (20 - e.life);
+
         ctx.fillStyle = rgba(255, 255, 0, alpha);
         ctx.beginPath();
         ctx.arc(e.x, e.y, radius, 0, Math.PI * 2);
@@ -336,10 +993,16 @@ function dibuixaEfectes() {
     }
 }
 
+/* ============================================================================================
+   MENÚS (INICI, PAUSA, GAME OVER)
+   ============================================================================================ */
+
 function dibuixaPanell(textLines, subTextLines = []) {
+    /* Pantalla fosca */
     ctx.fillStyle = "rgba(0,0,0,0.6)";
     ctx.fillRect(0, 0, 900, 500);
 
+    /* Panell central */
     const panelW = 520;
     const panelH = 260;
     const x = (900 - panelW) / 2;
@@ -355,11 +1018,13 @@ function dibuixaPanell(textLines, subTextLines = []) {
     ctx.fill();
     ctx.stroke();
 
+    /* Text principal */
     ctx.textAlign = "center";
     ctx.fillStyle = "#ffdd55";
     ctx.font = "36px Arial";
     ctx.fillText(textLines[0], 900 / 2, y + 55);
 
+    /* Text addicional */
     ctx.fillStyle = "white";
     ctx.font = "18px Arial";
     let offset = 95;
@@ -368,6 +1033,7 @@ function dibuixaPanell(textLines, subTextLines = []) {
         offset += 24;
     }
 
+    /* Subtext */
     ctx.fillStyle = "#a8e6ff";
     for (let t of subTextLines) {
         ctx.fillText(t, 900 / 2, y + offset);
@@ -377,208 +1043,11 @@ function dibuixaPanell(textLines, subTextLines = []) {
     ctx.textAlign = "left";
 }
 
-/* ============================================================================================
-   FUNCIONS D'INICI I ADAPTABILITAT
-   ============================================================================================ */
+// ************** FI DE REINSERCIÓ **************
 
-function resetGame() {
-    punts = 0;
-    vides = 5;
-    santa = { x: 200, y: 110, w: 60, h: 32, speed: 5, angle: 0 };
-    regals = []; cases = []; ocells = []; efectes = [];
-    velocitatCases = velocitatCasesBase;
-    encerts = 0; combo = 0; millorCombo = 0;
 
-    generaCasesInicials();
-    generaEstrelles();
-    generaNeu();
-    generaSkyline();
+loop(); // Inicia el loop del joc
+</script>
 
-    document.getElementById("score").innerText = "Punts: " + punts;
-    isMoving = { up: false, down: false, left: false, right: false };
-    isShooting = false;
-}
-
-function resizeCanvas() {
-    const controlsHeight = document.getElementById('controls').offsetHeight;
-    const containerHeight = document.body.clientHeight - controlsHeight - 20;
-    const aspectRatio = 900 / 500;
-    
-    let newWidth = window.innerWidth;
-    let newHeight = newWidth / aspectRatio;
-
-    if (newHeight > containerHeight) {
-        newHeight = containerHeight;
-        newWidth = newHeight * aspectRatio;
-    }
-    
-    if (newWidth > window.innerWidth) {
-        newWidth = window.innerWidth;
-        newHeight = newWidth / aspectRatio;
-    }
-
-    canvas.width = newWidth;
-    canvas.height = newHeight;
-    
-    const scaleX = canvas.width / 900;
-    const scaleY = canvas.height / 500;
-    ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
-}
-
-window.addEventListener('resize', resizeCanvas);
-
-/* ============================================================================================
-   CONTROLS DEL JUGADOR
-   ============================================================================================ */
-
-function handleTouch(e, isPressed, direction) {
-    e.preventDefault();
-    if (estat !== "playing" && direction !== "gift") {
-         // Si estem en pantalla d'inici, qualsevol botó de moviment inicia el joc
-        if (estat === "start" && (direction === "up" || direction === "down" || direction === "left" || direction === "right") && isPressed) {
-            resetGame();
-            estat = "playing";
-            actualitzaTextBoto();
-        }
-        return;
-    }
-
-    if (direction === "gift") {
-        if (isPressed && !isShooting) {
-            regals.push({
-                x: santa.x + santa.w / 2 - 5, y: santa.y + santa.h, w: 10, h: 10
-            });
-            isShooting = true;
-        } else if (!isPressed) {
-            isShooting = false;
-        }
-    } else {
-        isMoving[direction] = isPressed;
-    }
-}
-
-function setupTouchControls() {
-    const buttons = [
-        { element: upBtn, direction: 'up' }, { element: downBtn, direction: 'down' },
-        { element: leftBtn, direction: 'left' }, { element: rightBtn, direction: 'right' },
-        { element: giftBtn, direction: 'gift' }
-    ];
-
-    buttons.forEach(btn => {
-        btn.element.addEventListener("touchstart", (e) => handleTouch(e, true, btn.direction), { passive: false });
-        btn.element.addEventListener("touchend", (e) => handleTouch(e, false, btn.direction), { passive: false });
-        btn.element.addEventListener("touchcancel", (e) => handleTouch(e, false, btn.direction), { passive: false });
-    });
-    
-    pauseBtn.addEventListener("click", () => {
-        if (estat === "playing" || estat === "paused") togglePause();
-    });
-}
-
-/* ============================================================================================
-   UPDATE, DRAW I LOOP PRINCIPAL
-   ============================================================================================ */
-
-function update() {
-    if (estat !== "playing") return;
-
-    updateNeu();
-
-    if (isMoving.left)  santa.x -= santa.speed;
-    if (isMoving.right) santa.x += santa.speed;
-    if (isMoving.up)    santa.y -= santa.speed;
-    if (isMoving.down)  santa.y += santa.speed;
-
-    santa.x = Math.max(0, Math.min(900 - santa.w, santa.x));
-    santa.y = Math.max(10, Math.min(500 - santa.h - 10, santa.y));
-
-    santa.angle += 0.03;
-    santa.y += Math.sin(santa.angle) * 0.3;
-
-    for (let r of regals) r.y += 5;
-    for (let c of cases) {
-        c.x -= velocitatCases; c.chimX -= velocitatCases;
-        for (let f of c.finestres) f.x -= velocitatCases;
-    }
-
-    cases = cases.filter(c => c.x + c.w > -50);
-    let visible = cases.length;
-    let maxX = visible ? Math.max(...cases.map(c => c.x + c.w)) : 50;
-    while (visible < numCases) {
-        maxX += 170 + Math.random() * 80; cases.push(creaCasa(maxX)); visible++;
-    }
-
-    for (let c of cases) {
-        const casaRect = { x: c.x, y: c.y, w: c.w, h: c.h };
-        const teuladaRect = { x: c.x, y: c.y - 20, w: c.w, h: 20 };
-        const santaRect = { x: santa.x, y: santa.y, w: santa.w, h: santa.h };
-        if (intersectaRect(santaRect, casaRect.x, casaRect.y, casaRect.w, casaRect.h) ||
-            intersectaRect(santaRect, teuladaRect.x, teuladaRect.y, teuladaRect.w, teuladaRect.h)) {
-            perdVida(vides); break;
-        }
-    }
-
-    regals = regals.filter(r => {
-        let encert = false; let puntsGuanyats = 0;
-        for (let c of cases) {
-            if (c.completada) continue;
-            if (intersectaRect(r, c.chimX, c.chimY, c.chimW, c.chimH)) { encert = true; puntsGuanyats = 2; c.completada = true; efectes.push({ x: r.x + r.w / 2, y: r.y + r.h / 2, life: 20 }); break; }
-            const roofX = c.x; const roofY = c.y - 20; const roofW = c.w; const roofH = 20;
-            if (intersectaRect(r, roofX, roofY, roofW, roofH) && r.y + r.h <= c.y) { encert = true; puntsGuanyats = 1; c.completada = true; efectes.push({ x: r.x + r.w / 2, y: r.y + r.h / 2, life: 20 }); break; }
-        }
-
-        if (encert) {
-            punts += puntsGuanyats; encerts++; combo++; if (combo > millorCombo) millorCombo = combo;
-            document.getElementById("score").innerText = "Punts: " + punts;
-            if (encerts % 5 === 0) velocitatCases += 0.5;
-            return false;
-        }
-        if (r.y >= 500) { perdVida(0.5); return false; }
-        return true;
-    });
-
-    if (Math.random() < 0.01 && ocells.length < 4) {
-        ocells.push({ x: 900 + 40, y: 40 + Math.random() * 250, w: 40, h: 22 });
-    }
-
-    ocells = ocells.filter(o => {
-        o.x -= velocitatCases;
-        const santaRect = { x: santa.x, y: santa.y, w: santa.w, h: santa.h };
-        if (intersectaRect(santaRect, o.x, o.y, o.w, o.h)) { perdVida(1); return false; }
-        return o.x + o.w > -50;
-    });
-
-    efectes.forEach(e => e.life--);
-    efectes = efectes.filter(e => e.life > 0);
-}
-
-function draw() {
-    ctx.save();
-    const scaleX = canvas.width / 900;
-    const scaleY = canvas.height / 500;
-    ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
-
-    dibuixaNit(); dibuixaSkyline(); dibuixaNeu(); dibuixaCases(); dibuixaOcells();
-    dibuixaSantaIRen(); dibuixaRegals(); dibuixaEfectes(); dibuixaVides();
-
-    if (estat === "start") {
-        dibuixaPanell(["Joc del Pare Noel"], ["Utilitza els botons tàctils per moure i llençar regals.", "Evita ocells i cases · Teulada = 1 punt · Xemeneia = 2 punts", "Toca un botó de moviment per començar"]);
-    } else if (estat === "paused") {
-        dibuixaPanell(["PAUSA"], ["Prem el botó Reprendre per continuar"]);
-    } else if (estat === "gameover") {
-        dibuixaPanell(["GAME OVER", "Punts: " + punts, "Millor racha: " + millorCombo], ["Refresca la pàgina per tornar a jugar"]);
-    }
-    
-    ctx.restore();
-}
-
-function loop() {
-    update();
-    draw();
-    requestAnimationFrame(loop);
-}
-
-// Inicialització: crida al loop i configuració inicial
-resizeCanvas(); // Ajusta la mida inicialment
-setupTouchControls(); // Configura els listeners dels botons
-loop(); // Inicia el bucle
+</body>
+</html>
