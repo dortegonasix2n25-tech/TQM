@@ -1,135 +1,210 @@
-/* Importació de la font Pixelada */
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pare Noel Pixel Game - Escaneja i Juga</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"> 
+    
+    <style>
+        /* Importació de la font Pixelada */
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        /* Estils Base i Fons: Més Professional i Nadalenc */
+        body {
+            /* Fons: Gradient de blau fosc (nit) a vermell (nadal) */
+            background: linear-gradient(180deg, #000814 0%, #001f40 50%, #ff4d4d 100%);
+            color: white;
+            font-family: 'Press Start 2P', monospace; /* Font de joc retro */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
 
-/* Estils Base i Fons: Més Professional i Nadalenc */
-body {
-    /* Fons: Gradient de blau fosc (nit) a vermell (nadal) */
-    background: linear-gradient(180deg, #000814 0%, #001f40 50%, #ff4d4d 100%);
-    color: white;
-    font-family: 'Press Start 2P', monospace; /* Font de joc retro */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    flex-direction: column;
-    position: relative;
-    overflow: hidden;
-    text-align: center;
-}
+        /* Contenidor Principal: Centrat i Elevat */
+        .content {
+            background-color: rgba(0, 0, 0, 0.75); /* Fons fosc semitransparent per al text */
+            padding: 30px 40px;
+            border-radius: 15px;
+            max-width: 90%;
+            width: 550px;
+            /* Ombra i marc daurat */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0 5px #ffcc00; 
+            z-index: 10; 
+            margin: 20px auto;
+        }
 
-/* Contenidor Principal: Centrat i Elevat */
-.content {
-    background-color: rgba(0, 0, 0, 0.75); /* Fons fosc semitransparent per al text */
-    padding: 30px 40px;
-    border-radius: 15px;
-    max-width: 90%;
-    width: 550px;
-    /* Ombra i marc daurat */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0 5px #ffcc00; 
-    z-index: 10; 
-    margin: 20px auto;
-}
+        h1 {
+            font-size: 1.8em; 
+            margin-bottom: 20px;
+            color: #ffcc00; /* Daura cridaner */
+            text-shadow: 2px 2px 4px #000;
+        }
 
-h1 {
-    font-size: 1.8em; /* Mida ajustada per la font retro */
-    margin-bottom: 20px;
-    color: #ffcc00; /* Daura cridaner */
-    text-shadow: 2px 2px 4px #000;
-}
+        .description {
+            font-size: 0.8em; 
+            margin-bottom: 25px;
+            max-width: 100%;
+            font-weight: normal;
+            line-height: 1.5;
+            color: #a8e6ff; /* Blau clar per destacar */
+        }
 
-.description {
-    font-size: 0.8em; /* Font més petita per la Press Start 2P */
-    margin-bottom: 25px;
-    max-width: 100%;
-    font-weight: normal;
-    line-height: 1.5;
-    color: #a8e6ff; /* Blau clar per destacar */
-}
+        /* Codis QR */
+        .qr-container {
+            margin: 30px 0;
+            padding: 15px;
+            border: 2px dashed #a8e6ff; /* Marc més elegant */
+            border-radius: 10px;
+            display: inline-block; 
+        }
 
-/* Codis QR */
-.qr-container {
-    margin: 30px 0;
-    padding: 15px;
-    border: 2px dashed #a8e6ff; /* Marc més elegant */
-    border-radius: 10px;
-    display: inline-block; /* Per envoltar només el contingut */
-}
+        .qr-container p {
+             font-size: 0.7em;
+             margin-top: 5px;
+             margin-bottom: 15px;
+             color: white;
+        }
 
-.qr-container p {
-     font-size: 0.7em;
-     margin-top: 5px;
-     margin-bottom: 15px;
-     color: white;
-}
+        .qr {
+            width: 150px;
+            height: 150px;
+            border-radius: 5px;
+            border: 4px solid #ffcc00;
+        }
 
-.qr {
-    width: 150px;
-    height: 150px;
-    border-radius: 5px;
-    border: 4px solid #ffcc00;
-}
+        /* Botó Jugar */
+        .button-container {
+            margin-top: 40px;
+        }
 
-/* Botó Jugar */
-.button-container {
-    margin-top: 40px;
-}
+        .button-container button {
+            background-color: #ff4d4d; /* Vermell de Nadal */
+            color: white;
+            padding: 15px 30px;
+            font-size: 1em;
+            border: 3px solid #b30000;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 6px 0 #b30000; /* Efecte 3D suau */
+            transition: all 0.1s;
+        }
 
-.button-container button {
-    background-color: #ff4d4d; /* Vermell de Nadal */
-    color: white;
-    padding: 15px 30px;
-    font-size: 1em;
-    border: 3px solid #b30000;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    box-shadow: 0 6px 0 #b30000; /* Efecte 3D suau */
-    transition: all 0.1s;
-}
+        .button-container button:hover {
+            background-color: #ff6666;
+        }
+        
+        .button-container button:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 #b30000;
+        }
 
-.button-container button:hover {
-    background-color: #ff6666;
-}
+        /* Neteja P estil */
+        p {
+            font-size: 1em;
+            margin-top: 10px;
+            font-weight: normal;
+        }
 
-.button-container button:active {
-    transform: translateY(3px);
-    box-shadow: 0 3px 0 #b30000;
-}
+        /* Neu (Millorada - Classes usades al JS dinàmic) */
+        #snow-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
 
-/* Neteja P estil */
-p {
-    font-size: 1em;
-    margin-top: 10px;
-    font-weight: normal;
-}
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            width: 4px; 
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.9;
+            animation: fall 10s linear infinite;
+        }
 
-/* Decoració (Elements que s'han decidit ocultar) */
-.decorative-image, .tree-container {
-    display: none; 
-}
+        @keyframes fall {
+            0% { transform: translateY(0) translateX(0); }
+            100% { transform: translateY(100vh) translateX(50px); } 
+        }
+    </style>
+</head>
+<body>
 
-/* Neu (Millorada - Classes usades al JS dinàmic) */
-#snow-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1;
-}
+    <div id="snow-layer"></div>
 
-.snowflake {
-    position: absolute;
-    top: -10px;
-    background: white;
-    border-radius: 50%;
-    opacity: 0.9;
-    animation: fall 10s linear infinite;
-}
+    <div class="content">
+        <h1>Pare Noel Pixel Game</h1>
+        
+        
 
-@keyframes fall {
-    0% { transform: translateY(0) translateX(0); }
-    100% { transform: translateY(100vh) translateX(50px); } /* Caiguda amb lleuger moviment horitzontal */
-}
+        <p class="description">
+            Ajuda el Pare Noel a lliurar regals! Utilitza els controls tàctils o el teclat per esquivar ocells i cases. 
+            Llença els regals a les xemeneies o teulades.
+        </p>
+
+        <div class="qr-container">
+            <p>Escaneja aquest QR per jugar al mòbil:</p>
+            <img 
+                src="https://api.qrserver.com/v1/create-qr-code/?data=https://dortegonasix2n25-tech.github.io/joc-pare-noel/&size=200x200" 
+                alt="QR Code per al Joc" 
+                class="qr"
+            >
+        </div>
+
+        <div class="button-container">
+            <button onclick="startGame()">▶️ Començar a Jugar (Desktop)</button>
+        </div>
+        
+        <p style="font-size: 0.6em; margin-top: 20px; color: #ffcc00;">
+            Compatible amb navegadors moderns. Es recomana mode Pantalla Completa.
+        </p>
+
+    </div>
+
+<script>
+    // Funció per iniciar el joc (Utilitza la URL CORREGIDA)
+    function startGame() {
+        window.location.href = "https://dortegonasix2n25-tech.github.io/joc-pare-noel/"; 
+    }
+    
+    // Funció per generar la neu dinàmicament
+    function createSnowflakes() {
+        const snowLayer = document.getElementById('snow-layer');
+        const numberOfSnowflakes = 80;
+
+        for (let i = 0; i < numberOfSnowflakes; i++) {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'snowflake';
+            
+            snowflake.style.left = Math.random() * 100 + '%';
+            const duration = 8 + Math.random() * 8; 
+            const delay = Math.random() * 10;
+            const size = 3 + Math.random() * 4; 
+            
+            snowflake.style.animationDuration = duration + 's';
+            snowflake.style.animationDelay = delay + 's';
+            snowflake.style.width = size + 'px';
+            snowflake.style.height = size + 'px';
+            
+            snowLayer.appendChild(snowflake);
+        }
+    }
+    
+    // Inicia la neu
+    createSnowflakes();
+</script>
+</body>
+</html>
