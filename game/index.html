@@ -29,7 +29,7 @@
     }
 
     /* Estil base per als botons de control */
-    #pauseBtn, #startBtn, #fullscreenBtn {
+    #pauseBtn, #startBtn {
         position: absolute;
         top: 10px;
         z-index: 10;
@@ -51,37 +51,20 @@
 
     /* Botó de Start (al centre-dreta, ocult per defecte) */
     #startBtn {
-        right: 150px; /* Desplaçat més a l'esquerra per fer lloc a Pantalla Completa */
+        right: 100px; /* Posicionament per deixar espai a Pausa */
         background: #4CAF50; /* Verd cridaner */
         color: white;
         box-shadow: 0 4px 0 #388E3C;
         display: none; /* Ocult per defecte, es mostra amb JavaScript */
     }
-    
-    /* NOU: Botó de Pantalla Completa */
-    #fullscreenBtn {
-        right: 10px; /* Posicionat a la dreta, sota el de Pausa/Start per evitar conflictes si tots estan actius, o simplement a la dreta si Pausa/Start estan ocults */
-        top: 50px; /* Ligerament més avall */
-        background: #1e3a8a; /* Blau fosc consistent */
-        color: white;
-        box-shadow: 0 4px 0 #1e2849;
-    }
 
-
-    #pauseBtn:active, #startBtn:active, #fullscreenBtn:active {
+    #pauseBtn:active, #startBtn:active {
         transform: translateY(2px);
-    }
-    
-    #pauseBtn:active {
         box-shadow: 0 2px 0 #b38f00;
     }
     
     #startBtn:active {
         box-shadow: 0 2px 0 #388E3C;
-    }
-    
-    #fullscreenBtn:active {
-        box-shadow: 0 2px 0 #1e2849;
     }
 
     /* REQUISIT 2: Canvas responsiu */
@@ -93,15 +76,6 @@
         background: #001233;
         image-rendering: pixelated; 
     }
-    
-    /* Quan estem en pantalla completa, el canvas ha d'ocupar el 100% de la finestra */
-    /* La redimensió del canvas ja es gestiona per JS per mantenir l'aspecte */
-    :fullscreen canvas {
-        width: 100vw;
-        height: 100vh;
-        max-height: 100vh;
-    }
-
 
     /* Estils dels controls tàctils */
     #controls {
@@ -165,7 +139,8 @@
 
 <button id="startBtn">Començar</button>
 <button id="pauseBtn">Pausa</button>
-<button id="fullscreenBtn">Pantalla Completa</button> <canvas id="game" width="900" height="500"></canvas>
+
+<canvas id="game" width="900" height="500"></canvas>
 
 <div id="controls">
     <div class="d-pad">
@@ -187,8 +162,7 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const pauseBtn = document.getElementById("pauseBtn");
-const startBtn = document.getElementById("startBtn"); 
-const fullscreenBtn = document.getElementById("fullscreenBtn"); // NOU: Referència al botó de Pantalla Completa
+const startBtn = document.getElementById("startBtn"); // Referència al nou botó
 
 /* Controls Tàctils (Afegir referències) */
 const upBtn = document.getElementById("upBtn");
@@ -258,16 +232,7 @@ resetGame();
    ============================================================================================ */
 
 function resizeCanvas() {
-    // Si estem en pantalla completa, els controls no haurien d'estar visibles,
-    // així que recalculem l'alçada per aprofitar tot l'espai.
-    const isFullscreen = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
-
-    let controlsHeight = 0;
-    if (!isFullscreen) {
-        controlsHeight = document.getElementById('controls').offsetHeight;
-    }
-    
-    // 20px de marge total (10px a dalt, 10px a baix)
+    const controlsHeight = document.getElementById('controls').offsetHeight; 
     const containerHeight = document.body.clientHeight - controlsHeight - 20; 
     const aspectRatio = 900 / 500;
     
@@ -282,12 +247,6 @@ function resizeCanvas() {
     if (newWidth > window.innerWidth) {
         newWidth = window.innerWidth;
         newHeight = newWidth / aspectRatio;
-    }
-    
-    // Per a pantalles grans on no estem en pantalla completa, limita la mida màxima
-    if (!isFullscreen && newWidth > 900) {
-        newWidth = 900;
-        newHeight = 500;
     }
 
     canvas.width = newWidth;
@@ -347,7 +306,7 @@ function setupTouchControls() {
 setupTouchControls();
 
 /* ============================================================================================
-   CONTROLS DE ESTAT (PAUSA, START I PANTALLA COMPLETA)
+   CONTROLS DE ESTAT (PAUSA I NOU START)
    ============================================================================================ */
 
 // Maneig del botó de Pausa
@@ -355,7 +314,7 @@ pauseBtn.addEventListener("click", () => {
     if (estat === "playing" || estat === "paused") togglePause();
 });
 
-// Maneig del botó de Start/Reiniciar
+// NOU: Maneig del botó de Start/Reiniciar
 startBtn.addEventListener("click", () => {
     if (estat === "start" || estat === "gameover") {
         resetGame();
@@ -363,9 +322,6 @@ startBtn.addEventListener("click", () => {
         actualitzaTextBoto();
     }
 });
-
-// NOU: Maneig del botó de Pantalla Completa
-fullscreenBtn.addEventListener("click", toggleFullscreen);
 
 // Teclat per compatibilitat
 document.addEventListener("keydown", e => {
@@ -386,71 +342,6 @@ function togglePause() {
     else if (estat === "paused") estat = "playing";
     actualitzaTextBoto();
 }
-
-// Lògica de Pantalla Completa
-function toggleFullscreen() {
-    const doc = document.documentElement;
-    const isFullscreen = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
-
-    if (!isFullscreen) {
-        if (doc.requestFullscreen) doc.requestFullscreen();
-        else if (doc.mozRequestFullScreen) doc.mozRequestFullScreen();
-        else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
-        else if (doc.msRequestFullscreen) doc.msRequestFullscreen();
-        fullscreenBtn.textContent = "Sortir de Pantalla Completa";
-    } else {
-        if (document.exitFullscreen) document.exitFullscreen();
-        else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
-        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-        else if (document.msExitFullscreen) document.msExitFullscreen();
-        fullscreenBtn.textContent = "Pantalla Completa";
-    }
-    
-    // Forcem un redimensionament en canviar l'estat
-    setTimeout(resizeCanvas, 50); 
-}
-
-// Afegir escoltador d'esdeveniments per canvis d'estat (ESC, etc.)
-document.addEventListener("fullscreenchange", () => {
-    const isFullscreen = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
-    if (isFullscreen) {
-        fullscreenBtn.textContent = "Sortir de Pantalla Completa";
-    } else {
-        fullscreenBtn.textContent = "Pantalla Completa";
-    }
-    resizeCanvas(); // Torna a cridar resize quan s'entra/surt
-});
-
-document.addEventListener("webkitfullscreenchange", () => {
-    const isFullscreen = document.webkitFullscreenElement;
-    if (isFullscreen) {
-        fullscreenBtn.textContent = "Sortir de Pantalla Completa";
-    } else {
-        fullscreenBtn.textContent = "Pantalla Completa";
-    }
-    resizeCanvas();
-});
-
-document.addEventListener("mozfullscreenchange", () => {
-    const isFullscreen = document.mozFullScreenElement;
-    if (isFullscreen) {
-        fullscreenBtn.textContent = "Sortir de Pantalla Completa";
-    } else {
-        fullscreenBtn.textContent = "Pantalla Completa";
-    }
-    resizeCanvas();
-});
-
-document.addEventListener("msfullscreenchange", () => {
-    const isFullscreen = document.msFullscreenElement;
-    if (isFullscreen) {
-        fullscreenBtn.textContent = "Sortir de Pantalla Completa";
-    } else {
-        fullscreenBtn.textContent = "Pantalla Completa";
-    }
-    resizeCanvas();
-});
-
 
 // MODIFICADA: Ara també gestiona la visibilitat del botó START
 function actualitzaTextBoto() {
@@ -590,7 +481,7 @@ function draw() {
             [
                 "Utilitza els botons tàctils per moure i llençar regals.",
                 "Evita ocells i cases · Teulada = 1 punt · Xemeneia = 2 punts",
-                "Prem 'Començar' per jugar" 
+                "Prem 'Començar' per jugar" // Text actualitzat
             ]
         );
     }
@@ -609,7 +500,7 @@ function draw() {
                 "Punts: " + punts,
                 "Millor racha: " + millorCombo
             ],
-            ["Prem 'Torna a Jugar' per reintentar"] 
+            ["Prem 'Torna a Jugar' per reintentar"] // Text actualitzat
         );
     }
     
@@ -632,9 +523,6 @@ function loop() {
 // =============================================================================================
 
 function rgba(r, g, b, a) {
-    // Aquesta funció hauria de ser: `return "rgba(" + r + "," + g + "," + b + "," + a + ")";`
-    // Però, com que el codi original tenia un error de sintaxi (utilitzant ${} fora de backticks),
-    // i es necessita per la funció `dibuixaEfectes`, la corregiré a continuació:
     return `rgba(${r},${g},${b},${a})`;
 }
 
