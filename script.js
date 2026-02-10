@@ -8,7 +8,7 @@ document.getElementById("tree").addEventListener("click", function() {
 
     // Mostrar mensaje después de que los corazones caigan
     setTimeout(() => {
-        document.getElementById("message").innerHTML = "TU TEXTO AQUI";
+        document.getElementById("message").innerHTML = "Me siento tan afortunado de haberte tenido a mi lado por..";
         document.getElementById("message").style.display = "block";
     }, 3000);
 
