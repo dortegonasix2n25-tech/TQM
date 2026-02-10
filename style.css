@@ -1,14 +1,15 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #F8B9D4;
+    background-color: #F8B9D4; /* Rosa */
+    height: 100vh;
     overflow: hidden;
     font-family: Arial, sans-serif;
 }
 
 .tree-container {
     position: relative;
-    height: 100vh;
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
